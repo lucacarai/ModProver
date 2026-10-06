@@ -19,7 +19,7 @@ await mkdir(dist,{recursive:true});
 const top=['index.html','license.html','LICENSE','NOTICE.md'];
 const site=[...top,...await files('src'),...await files('vendor')];
 for (const path of site) { const target=resolve(dist,path); await mkdir(dirname(target),{recursive:true}); await copyFile(resolve(root,path),target); }
-const source=[...site,'.gitignore','README.md','package.json','server.mjs',...await files('docs'),...await files('.github'),...await files('scripts'),...await files('tests')];
+const source=[...site,'.gitignore','.gitattributes','README.md','package.json','server.mjs',...await files('docs'),...await files('.github'),...await files('scripts'),...await files('tests')];
 const entries=await Promise.all(source.map(async name=>({name:`ModProver/${name}`,data:await readFile(resolve(root,name))})));
 const manifest=entries.map(({name,data})=>`${createHash('sha256').update(data).digest('hex')}  ${name}`).join('\n')+'\n';
 entries.push({name:'ModProver/SHA256SUMS',data:Buffer.from(manifest)});

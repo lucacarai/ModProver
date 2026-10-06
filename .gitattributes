@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Preserve the original prover sources byte for byte on every platform.
+/vendor/mleansep12_swi.pl -text
+/vendor/mleantap13_swi.pl -text

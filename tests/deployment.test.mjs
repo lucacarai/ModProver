@@ -26,7 +26,7 @@ test('static build works beneath a subfolder and bundles exact corresponding sou
     const start=offset+30+nameLength+extra;
     archive.set(name,inflateRawSync(zip.subarray(start,start+packed))); offset=start+packed;
   }
-  for(const name of ['.gitignore','.github/workflows/deploy.yml','docs/DEPLOYMENT.md','README.md','LICENSE','NOTICE.md','index.html','src/decision.js','src/sep.pl','src/tap.pl','scripts/build.mjs','tests/prover.test.mjs','vendor/mleansep12_swi.pl','vendor/mleantap13_swi.pl','vendor/package/LICENSE.txt','vendor/package/dist/swipl/swipl-web.wasm','docs/DECISION-PROCEDURE.md']) assert.ok(archive.has(`ModProver/${name}`),name);
+  for(const name of ['.gitignore','.gitattributes','.github/workflows/deploy.yml','docs/DEPLOYMENT.md','README.md','LICENSE','NOTICE.md','index.html','src/decision.js','src/sep.pl','src/tap.pl','scripts/build.mjs','tests/prover.test.mjs','vendor/mleansep12_swi.pl','vendor/mleantap13_swi.pl','vendor/package/LICENSE.txt','vendor/package/dist/swipl/swipl-web.wasm','docs/DECISION-PROCEDURE.md']) assert.ok(archive.has(`ModProver/${name}`),name);
   for(const name of ['AGENTS.md','discussion.txt','preview.png']) assert.equal(archive.has(`ModProver/${name}`),false,name);
   for(const line of archive.get('ModProver/SHA256SUMS').toString().trim().split('\n')) {
     const [hash,name]=line.split('  '); assert.equal(createHash('sha256').update(archive.get(name)).digest('hex'),hash,name);
