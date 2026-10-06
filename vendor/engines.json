@@ -1,0 +1,7 @@
+{
+  "retrieved": "2026-10-06",
+  "engines": [
+    { "name": "MleanSeP", "version": "1.2", "file": "mleansep12_swi.pl", "url": "https://www.leancop.de/mleansep/programs/mleansep12_swi.pl", "sha256": "78d7da7f3566cc6848b438d11cf4df1bd8ac066eb198b5b527151f9f34696f19", "copyright": "2006-2011 Jens Otten", "licenseNotice": "GNU General Public License", "modified": false },
+    { "name": "MleanTAP", "version": "1.3", "file": "mleantap13_swi.pl", "url": "https://www.leancop.de/mleantap/programs/mleantap13_swi.pl", "sha256": "4a3285c9341e60c0aa97c36d1c6f28d8508cad7939507574a762dffffad92f87", "copyright": "2006-2012 Jens Otten", "licenseNotice": "GNU General Public License", "modified": false }
+  ]
+}
