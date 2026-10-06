@@ -41,6 +41,7 @@ function prepare(ast, logic, maxVariables) {
       case 'and': return truth(node.left, mask) && truth(node.right, mask);
       case 'or': return truth(node.left, mask) || truth(node.right, mask);
       case 'imp': return !truth(node.left, mask) || truth(node.right, mask);
+      case 'iff': return truth(node.left, mask) === truth(node.right, mask);
       default: throw new Error('Unknown connective.');
     }
   }

@@ -27,6 +27,7 @@ export function evaluate(ast, model, world = model.root) {
       case 'and': value = truth(node.left, w) && truth(node.right, w); break;
       case 'or': value = truth(node.left, w) || truth(node.right, w); break;
       case 'imp': value = !truth(node.left, w) || truth(node.right, w); break;
+      case 'iff': value = truth(node.left, w) === truth(node.right, w); break;
       case 'box': value = successors[w].every(v => truth(node.argument, v)); break;
       case 'diamond': value = successors[w].some(v => truth(node.argument, v)); break;
       default: throw new Error('Unknown connective.');

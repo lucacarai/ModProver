@@ -19,6 +19,11 @@ export const cases = [
   ['box p imp box (p and box p)', ['K4','S4','S5','D4']],
   ['box p imp box (p and diamond p)', ['T','S4','S5','D4']],
   ['neg box p imp diamond neg p', ['K','T','K4','S4','S5','D','D4']],
+  ['p iff p', ['K','T','K4','S4','S5','D','D4']],
+  ['p iff q', []],
+  ['box p iff neg dia neg p', ['K','T','K4','S4','S5','D','D4']],
+  ['box (p iff q) imp (box p iff box q)', ['K','T','K4','S4','S5','D','D4']],
+  ['p iff box p', []],
 ];
 test('separating axioms, modal dualities and constants in every logic', () => {
   for (const [input,validLogics] of cases) for (const logic of Object.keys(LOGICS)) {
@@ -26,6 +31,16 @@ test('separating axioms, modal dualities and constants in every logic', () => {
     assert.equal(result.valid,validLogics.includes(logic),`${logic}: ${input}`);
     if (result.valid) assert.equal(verifyProof(ast,logic,result.proof),true, `${logic}: ${input}`);
     else assert.equal(verifyCountermodel(ast,logic,result.model),true,`${logic}: ${input}`);
+  }
+});
+
+test('biimplication agrees with both implications for every truth assignment', () => {
+  const ast=parseFormula('p iff q');
+  const expanded=parseFormula('(p imp q) and (q imp p)');
+  for (const atoms of [[], ['p'], ['q'], ['p','q']]) {
+    const model={root:0,worlds:[{atoms}],edges:[]};
+    assert.equal(evaluate(ast,model),atoms.length===0 || atoms.length===2);
+    assert.equal(evaluate(ast,model),evaluate(expanded,model));
   }
 });
 test('countermodels include cycles and allow atoms to stop holding along an arrow', () => {
@@ -60,7 +75,7 @@ test('compare type elimination with all two-world frames for a deterministic for
   const next=n=>{ seed=(seed*1664525+1013904223)>>>0; return seed%n; };
   function generate(depth) {
     if (!depth) return {type: ['atom','true','false'][next(3)],name:'p'};
-    const type=['neg','box','diamond','and','or','imp'][next(6)];
+    const type=['neg','box','diamond','and','or','imp','iff'][next(7)];
     return ['neg','box','diamond'].includes(type)?{type,argument:generate(depth-1)}:{type,left:generate(depth-1),right:generate(depth-1)};
   }
   for (let i=0;i<80;i++) {

@@ -31,3 +31,14 @@ test('original engines and finite elimination agree on proved formulas',()=>{
   for(const logic of ['K','T','K4','S4','S5','D','D4']) for(const formula of formulas) if(original(formula,logic)==='valid') assert.equal(decide(parseFormula(formula),logic).valid,true,`${logic}: ${formula}`);
 });
 test('both unchanged source files load without errors',()=>assert.equal(diagnostics.some(message=>/ERROR|Unknown procedure/.test(message)),false,diagnostics.join('\n')));
+
+test('both original engines accept biimplication and agree with its modal semantics',()=>{
+  for(const logic of ['K','T','K4','S4','S5','D','D4']) {
+    for(const formula of ['p iff p','(p iff q) iff ((p imp q) and (q imp p))','box p iff neg dia neg p']) {
+      assert.equal(original(formula,logic),'valid',`${logic}: ${formula}`);
+      assert.equal(decide(parseFormula(formula),logic).valid,true,`${logic}: ${formula}`);
+    }
+    assert.equal(original('p iff q',logic),'unknown',logic);
+    assert.equal(decide(parseFormula('p iff q'),logic).valid,false,logic);
+  }
+});

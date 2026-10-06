@@ -23,11 +23,13 @@ Set the `PORT` environment variable to use another port.
 - Constants: `true`, `false`.
 - Prefix operators: `neg`, `box`, `dia`, rendered as ¬, □ and ◇.
   `diamond` is also accepted as an alias for `dia`.
-- Infix operators: `and`, `or`, `imp`, rendered as ∧, ∨ and →.
+- Infix operators: `and`, `or`, `imp`, `iff`, rendered as ∧, ∨, → and ↔.
+  `p iff q` is biimplication: both propositions have the same truth value.
 - Prefixes bind first. `box p imp p` means `(box p) imp p`.
   Write `box (p imp q)` to put the implication inside the box.
 - Repeated `and` or repeated `or` is allowed. Parenthesize mixed conjunctions
-  and disjunctions, and repeated implications. `and` and `or` bind before `imp`.
+  and disjunctions, and repeated implications or biimplications. `and` and `or`
+  bind before `imp`; `iff` binds last.
 - Unicode symbols are displayed in the preview; enter the words above.
 
 Try `box p imp p` in K and then in S4; `box p imp box box p` in T and K4;

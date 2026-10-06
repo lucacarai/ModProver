@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Infix parser and preview added 2026-10-05. See NOTICE.md and LICENSE.
-const operators = new Set(['and', 'or', 'imp']);
+const operators = new Set(['and', 'or', 'imp', 'iff']);
 const prefixes = new Set(['neg', 'box', 'dia', 'diamond']);
 const MAX_LENGTH = 8000;
 const MAX_DEPTH = 100;
@@ -21,7 +21,7 @@ export function parseFormula(input) {
     const value = match[0];
     if (/^\s+$/.test(value)) continue;
     if (!['(', ')', 'true', 'false', ...prefixes, ...operators].includes(value) && !/^[A-Za-z][0-9]*$/.test(value)) {
-      throw new FormulaError(`Unrecognized input “${value}”. Use proposition letters, true, false, neg, box, dia (or diamond), and, or, and imp.`, match.index);
+      throw new FormulaError(`Unrecognized input “${value}”. Use proposition letters, true, false, neg, box, dia (or diamond), and, or, imp, and iff.`, match.index);
     }
     tokens.push({ value, position: match.index });
   }
@@ -57,23 +57,32 @@ export function parseFormula(input) {
     items.push(operand());
     while (cursor < tokens.length && tokens[cursor].value !== ')') {
       const token = tokens[cursor++];
-      if (!operators.has(token.value)) fail(`Expected and, or, or imp before “${token.value}”.`, token);
+      if (!operators.has(token.value)) fail(`Expected and, or, imp, or iff before “${token.value}”.`, token);
       ops.push(token);
       items.push(operand());
     }
-    const implications = ops.filter(op => op.value === 'imp');
-    if (implications.length > 1) fail('Add parentheses: each group can contain only one imp.', implications[1]);
-    const conjunction = ops.find(op => op.value === 'and');
-    const disjunction = ops.find(op => op.value === 'or');
-    if (conjunction && disjunction) fail('Add parentheses to separate and from or.', conjunction.position > disjunction.position ? conjunction : disjunction);
+    const equivalences = ops.filter(op => op.value === 'iff');
+    if (equivalences.length > 1) fail('Add parentheses: each group can contain only one iff.', equivalences[1]);
     function fold(start, end) {
       let node = items[start];
       for (let i = start; i < end; i++) node = { type: ops[i].value, left: node, right: items[i + 1] };
       return node;
     }
-    const implicationIndex = ops.findIndex(op => op.value === 'imp');
-    return implicationIndex < 0 ? fold(0, ops.length) : {
-      type: 'imp', left: fold(0, implicationIndex), right: fold(implicationIndex + 1, ops.length)
+    function implication(start, end) {
+      const segment = ops.slice(start, end);
+      const implications = segment.filter(op => op.value === 'imp');
+      if (implications.length > 1) fail('Add parentheses: each group can contain only one imp.', implications[1]);
+      const conjunction = segment.find(op => op.value === 'and');
+      const disjunction = segment.find(op => op.value === 'or');
+      if (conjunction && disjunction) fail('Add parentheses to separate and from or.', conjunction.position > disjunction.position ? conjunction : disjunction);
+      const index = segment.findIndex(op => op.value === 'imp');
+      return index < 0 ? fold(start, end) : {
+        type: 'imp', left: fold(start, start + index), right: fold(start + index + 1, end)
+      };
+    }
+    const equivalenceIndex = ops.findIndex(op => op.value === 'iff');
+    return equivalenceIndex < 0 ? implication(0, ops.length) : {
+      type: 'iff', left: implication(0, equivalenceIndex), right: implication(equivalenceIndex + 1, ops.length)
     };
   }
   if (!tokens.length) fail('Enter a formula to begin.');
@@ -93,17 +102,17 @@ export function toProlog(ast) {
     case 'neg': return `'~'(${toProlog(ast.argument)})`;
     case 'box': return `'#'(${toProlog(ast.argument)})`;
     case 'diamond': return `'*'(${toProlog(ast.argument)})`;
-    default: return `'${{imp: '=>', and: ',', or: ';'}[ast.type]}'(${toProlog(ast.left)},${toProlog(ast.right)})`;
+    default: return `'${{imp: '=>', iff: '<=>', and: ',', or: ';'}[ast.type]}'(${toProlog(ast.left)},${toProlog(ast.right)})`;
   }
 }
 
-const symbols = { and: '∧', or: '∨', imp: '→', neg: '¬', box: '□', diamond: '◇', true: '⊤', false: '⊥' };
+const symbols = { and: '∧', or: '∨', imp: '→', iff: '↔', neg: '¬', box: '□', diamond: '◇', true: '⊤', false: '⊥' };
 export function formatFormula(ast, nested = false) {
   if (ast.type === 'atom') return ast.name;
   if (ast.type === 'true' || ast.type === 'false') return symbols[ast.type];
   if (prefixes.has(ast.type)) return `${symbols[ast.type]}${formatFormula(ast.argument, true)}`;
   function part(child) {
-    return child.type === ast.type && ast.type !== 'imp'
+    return child.type === ast.type && ['and', 'or'].includes(ast.type)
       ? formatFormula(child, false) : formatFormula(child, true);
   }
   const expression = `${part(ast.left)} ${symbols[ast.type]} ${part(ast.right)}`;
@@ -120,7 +129,7 @@ export function formulaMathML(ast) {
     if (node.type === 'true' || node.type === 'false') return `<mo>${symbols[node.type]}</mo>`;
     if (prefixes.has(node.type)) return `<mrow><mo>${symbols[node.type]}</mo>${render(node.argument, true, node.type)}</mrow>`;
     const body = `${render(node.left, true, node.type)}<mo>${symbols[node.type]}</mo>${render(node.right, true, node.type)}`;
-    const grouped = nested && !(parent === node.type && node.type !== 'imp');
+    const grouped = nested && !(parent === node.type && ['and', 'or'].includes(node.type));
     return `<mrow>${grouped ? '<mo>(</mo>' : ''}${body}${grouped ? '<mo>)</mo>' : ''}</mrow>`;
   }
   return `<math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="${text(formatFormula(ast))}">${render(ast)}</math>`;
